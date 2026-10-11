@@ -1,0 +1,38 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}FoodFlow - Expiry-Aware Food Donation Platform{% endblock %}</title>
+    
+    <!-- FoodFlow Core Stylesheet -->
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    <!-- Sticky Navbar Partial -->
+    {% include 'partials/navbar.html' %}
+
+    <!-- Main Content Body -->
+    <main>
+        <div class="container">
+            <!-- Messages / Alerts Partial -->
+            {% include 'partials/messages.html' %}
+            
+            {% block content %}
+            {% endblock %}
+        </div>
+    </main>
+
+    <!-- Footer Partial -->
+    {% include 'partials/footer.html' %}
+
+    <!-- Vanilla JavaScript Scripts -->
+    <script src="{% static 'js/countdown.js' %}"></script>
+    <script src="{% static 'js/claims.js' %}"></script>
+    <script src="{% static 'js/notifications.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

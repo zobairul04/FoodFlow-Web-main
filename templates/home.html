@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block title %}FoodFlow — Expiry-Aware Food Donation Platform{% endblock %}
+
+{% block content %}
+<section style="text-align: center; padding: 3rem 0 2rem;">
+    <h1 style="font-size: 2.75rem; color: var(--green-700); margin-bottom: 1rem; font-weight: 800;">
+        Connecting Extra Food with People in Need.
+    </h1>
+    <p style="font-size: 1.2rem; color: var(--grey-700); max-width: 750px; margin: 0 auto 2rem;">
+        FoodFlow is an expiry-aware platform connecting restaurants, grocers, and households with verified local charities, shelters, and individuals in real-time.
+    </p>
+    <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+        <a href="{% url 'accounts:register' %}" class="btn btn-primary btn-lg">Get Started / Register</a>
+        <a href="{% url 'listings:browse_food' %}" class="btn btn-outline btn-lg">Browse Available Food</a>
+    </div>
+</section>
+
+<!-- Live Impact Metrics -->
+<section style="margin: 2.5rem 0;">
+    <div class="grid grid-4">
+        <div class="stat-card">
+            <span class="stat-value">{{ active_available }}</span>
+            <span class="stat-label">Active Food Listings</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-value">{{ completed_rescues }}</span>
+            <span class="stat-label">Successful Pickups</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-value">{{ total_listings }}</span>
+            <span class="stat-label">Total Donations Posted</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-value">{{ verified_donors }}</span>
+            <span class="stat-label">Verified Donors</span>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works Section -->
+<section style="background: var(--white); border-radius: var(--radius-lg); padding: 2.5rem; margin: 3rem 0; border: 1px solid var(--grey-200); box-shadow: var(--shadow-sm);">
+    <h2 style="text-align: center; color: var(--green-700); margin-bottom: 2rem; font-size: 1.8rem;">How FoodFlow Works</h2>
+    
+    <div class="grid grid-3">
+        <div style="text-align: center; padding: 1rem;">
+            <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🥘</div>
+            <h3 style="margin-bottom: 0.5rem; color: var(--ink);">1. Post Surplus Food</h3>
+            <p style="color: var(--grey-700); font-size: 0.95rem;">
+                Donors list excess food with quantity, expiry time, and pickup address. Our automated safety screener checks the listing.
+            </p>
+        </div>
+
+        <div style="text-align: center; padding: 1rem;">
+            <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">📍</div>
+            <h3 style="margin-bottom: 0.5rem; color: var(--ink);">2. Local Matching & Alerts</h3>
+            <p style="color: var(--grey-700); font-size: 0.95rem;">
+                Matching verified recipients in the same area or city receive immediate alerts with live countdown timers.
+            </p>
+        </div>
+
+        <div style="text-align: center; padding: 1rem;">
+            <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🔑</div>
+            <h3 style="margin-bottom: 0.5rem; color: var(--ink);">3. Claim & Pickup Code</h3>
+            <p style="color: var(--grey-700); font-size: 0.95rem;">
+                Recipients claim portions and receive a unique 8-character code. The donor verifies the code upon handover.
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- Recent Available Listings Preview -->
+{% if recent_listings %}
+<section style="margin: 3rem 0;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <h2 style="font-size: 1.6rem; color: var(--ink);">Recently Available Food</h2>
+        <a href="{% url 'listings:browse_food' %}" class="btn btn-outline btn-sm">View All Available &rarr;</a>
+    </div>
+
+    <div class="grid grid-3">
+        {% for listing in recent_listings %}
+            {% include 'listings/listing_card.html' with listing=listing %}
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+{% endblock %}

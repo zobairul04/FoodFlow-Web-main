@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ page_title|default:"Food Claims" }} — FoodFlow{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+        <h1 style="color: var(--green-700); font-size: 2rem;">{{ page_title|default:"Food Claims" }}</h1>
+        <p style="color: var(--grey-500);">{{ page_subtitle|default:"Track your active reservations, pickup codes, and claim history." }}</p>
+    </div>
+    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+        {% if user.is_authenticated %}
+            {% if user.is_recipient %}
+                <a href="{% url 'listings:browse_food' %}" class="btn btn-primary">Browse Available Food</a>
+            {% elif user.is_donor %}
+                <a href="{% url 'claims:verify_pickup' %}" class="btn btn-primary">Verify Pickup Code</a>
+            {% endif %}
+        {% else %}
+            <a href="{% url 'accounts:login' %}?next={% url 'claims:my_claims' %}" class="btn btn-primary">Log In to View Claims</a>
+            <a href="{% url 'accounts:register' %}" class="btn btn-secondary">Register New Account</a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Guest / Public Tracking Section or Quick Lookup -->
+{% if not user.is_authenticated or lookup_result or lookup_code %}
+<div class="card" style="margin-bottom: 2rem; border-left: 4px solid var(--green-700); background: #fdfdfd;">
+    <div class="card-header">
+        <h3 class="card-title">🔍 Track Claim by 8-Character Pickup Code</h3>
+        <span class="card-subtitle">Recipients and donors can look up claim status anytime</span>
+    </div>
+    <div class="card-body">
+        <form method="get" action="{% url 'claims:my_claims' %}" style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
+            <input type="text" name="pickup_code" value="{{ lookup_code }}" maxlength="8" placeholder="ENTER 8-CHAR CODE (e.g. 4F9B2C1A)" class="form-input" style="max-width: 350px; text-transform: uppercase; letter-spacing: 0.15em; font-family: monospace; font-weight: 600;" required>
+            <button type="submit" class="btn btn-primary">Track Claim</button>
+            {% if lookup_code %}
+                <a href="{% url 'claims:my_claims' %}" class="btn btn-secondary btn-sm">Clear Search</a>
+            {% endif %}
+        </form>
+
+        {% if lookup_result %}
+        <div style="margin-top: 1.5rem; padding: 1.25rem; border: 1px solid var(--grey-200); border-radius: var(--radius-md); background: white;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
+                <h4 style="margin: 0; color: var(--grey-900); font-size: 1.15rem;">{{ lookup_result.listing.food_name }}</h4>
+                <span class="badge badge-{{ lookup_result.status }}">{{ lookup_result.get_status_display }}</span>
+            </div>
+            <p style="margin: 0.25rem 0; color: var(--grey-700); font-size: 0.95rem;">
+                <strong>Reserved Quantity:</strong> {{ lookup_result.claimed_quantity|floatformat:"-2" }} {{ lookup_result.listing.unit }}
+            </p>
+            <p style="margin: 0.25rem 0; color: var(--grey-700); font-size: 0.95rem;">
+                <strong>Donor:</strong> {{ lookup_result.listing.donor.organization_name|default:lookup_result.listing.donor.user.username }}
+            </p>
+            <p style="margin: 0.25rem 0; color: var(--grey-700); font-size: 0.95rem;">
+                <strong>Location:</strong> {{ lookup_result.listing.location.address }}, {{ lookup_result.listing.location.area }}, {{ lookup_result.listing.location.city }}
+            </p>
+            <p style="margin: 0.25rem 0; color: var(--grey-700); font-size: 0.95rem;">
+                <strong>Pickup Deadline:</strong> {{ lookup_result.pickup_deadline|date:"M d, Y, h:i A" }}
+            </p>
+            <p style="margin: 0.25rem 0; color: var(--grey-500); font-size: 0.85rem;">
+                Claimed on: {{ lookup_result.claimed_at|date:"M d, Y, h:i A" }}
+            </p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+{% if user.is_authenticated %}
+    <!-- Status Filters for Authenticated Users -->
+    <div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+        <a href="{% url 'claims:my_claims' %}" class="btn btn-sm {% if not status_filter %}btn-primary{% else %}btn-secondary{% endif %}">All</a>
+        <a href="{% url 'claims:my_claims' %}?status=pending" class="btn btn-sm {% if status_filter == 'pending' %}btn-primary{% else %}btn-secondary{% endif %}">Pending Pickup</a>
+        <a href="{% url 'claims:my_claims' %}?status=completed" class="btn btn-sm {% if status_filter == 'completed' %}btn-primary{% else %}btn-secondary{% endif %}">Completed</a>
+        <a href="{% url 'claims:my_claims' %}?status=cancelled" class="btn btn-sm {% if status_filter == 'cancelled' %}btn-secondary{% else %}btn-secondary{% endif %}" style="{% if status_filter == 'cancelled' %}background: var(--grey-700); color: white;{% endif %}">Cancelled</a>
+        <a href="{% url 'claims:my_claims' %}?status=expired" class="btn btn-sm {% if status_filter == 'expired' %}btn-secondary{% else %}btn-secondary{% endif %}" style="{% if status_filter == 'expired' %}background: var(--grey-700); color: white;{% endif %}">Expired</a>
+    </div>
+
+    {% if claims %}
+    <div class="grid grid-2">
+        {% for claim in claims %}
+        <div class="card" style="border-left: 4px solid {% if claim.status == 'pending' %}var(--green-700){% elif claim.status == 'completed' %}var(--grey-500){% else %}var(--red-600){% endif %};">
+            <div class="card-header">
+                <div>
+                    <h3 class="card-title">{{ claim.listing.food_name }}</h3>
+                    <span class="card-subtitle">Claim #{{ claim.id }} &bull; {{ claim.claimed_at|date:"M d, Y, h:i A" }}</span>
+                </div>
+                <div>
+                    <span class="badge badge-{{ claim.status }}">{{ claim.get_status_display }}</span>
+                </div>
+            </div>
+
+            <div class="card-body">
+                {% if user.is_donor %}
+                    <!-- Donor View: Show recipient who claimed -->
+                    <p style="font-size: 0.95rem; color: var(--grey-700); margin-bottom: 0.75rem;">
+                        Claimed by: <strong>{{ claim.recipient.user.username }}</strong> ({{ claim.recipient.get_recipient_type_display }})
+                    </p>
+                    <p style="font-size: 0.95rem; color: var(--grey-700); margin-bottom: 0.75rem;">
+                        Reserved Quantity: <strong>{{ claim.claimed_quantity|floatformat:"-2" }} {{ claim.listing.unit }}</strong>
+                    </p>
+                {% else %}
+                    <!-- Recipient View: Show donor who listed -->
+                    <p style="font-size: 0.95rem; color: var(--grey-700); margin-bottom: 0.75rem;">
+                        Reserved: <strong>{{ claim.claimed_quantity|floatformat:"-2" }} {{ claim.listing.unit }}</strong> from {{ claim.listing.donor.organization_name|default:claim.listing.donor.user.username }}
+                    </p>
+                {% endif %}
+
+                <p style="font-size: 0.9rem; color: var(--grey-700);">
+                    📍 <em>{{ claim.listing.location.address }}, {{ claim.listing.location.area }}, {{ claim.listing.location.city }}</em>
+                </p>
+
+                {% if claim.status == 'pending' %}
+                    {% if user.is_recipient %}
+                    <div class="pickup-code-box" style="margin: 1rem 0; padding: 0.75rem;">
+                        <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--grey-500); font-weight: 700;">Your 8-Character Pickup Code:</div>
+                        <div class="pickup-code-display" style="font-size: 1.8rem;">{{ claim.pickup_code }}</div>
+                    </div>
+                    {% endif %}
+                    <p style="font-size: 0.85rem; color: var(--red-600); font-weight: 600; margin-top: 0.5rem;">
+                        ⏰ Pickup Deadline: {{ claim.pickup_deadline|date:"M d, Y, h:i A" }}
+                    </p>
+                {% endif %}
+            </div>
+
+            <div class="card-footer">
+                <a href="{% url 'claims:claim_detail' pk=claim.pk %}" class="btn btn-secondary btn-sm">View Full Details</a>
+                
+                {% if user.is_recipient and claim.can_be_cancelled %}
+                <form class="cancel-claim-form" action="{% url 'claims:claim_cancel' pk=claim.pk %}" method="post" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-sm">Cancel Claim</button>
+                </form>
+                {% endif %}
+
+                {% if user.is_donor and claim.status == 'pending' %}
+                <a href="{% url 'claims:verify_pickup' %}?code={{ claim.pickup_code }}" class="btn btn-primary btn-sm">Verify Pickup</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="card" style="text-align: center; padding: 4rem 2rem;">
+        <p style="color: var(--grey-500); font-size: 1.1rem; margin-bottom: 1.5rem;">No food claims found.</p>
+        {% if user.is_recipient %}
+            <a href="{% url 'listings:browse_food' %}" class="btn btn-primary">Browse Available Food Donations</a>
+        {% elif user.is_donor %}
+            <a href="{% url 'listings:donor_listing_create' %}" class="btn btn-primary">+ Create New Food Donation</a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+{% else %}
+    <!-- Public Guest Guidance Card -->
+    {% if not lookup_result %}
+    <div class="card" style="text-align: center; padding: 3rem 2rem; margin-top: 1rem;">
+        <h3 style="color: var(--grey-900); margin-bottom: 0.75rem;">Looking for your personal claims list?</h3>
+        <p style="color: var(--grey-600); max-width: 500px; margin: 0 auto 1.5rem auto;">
+            Registered Recipients can track their reservations and access pickup codes. Registered Donors can manage incoming claims.
+        </p>
+        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+            <a href="{% url 'accounts:login' %}?next={% url 'claims:my_claims' %}" class="btn btn-primary">Log In to Your Account</a>
+            <a href="{% url 'accounts:register' %}" class="btn btn-secondary">Create a Free Account</a>
+        </div>
+    </div>
+    {% endif %}
+{% endif %}
+{% endblock %}

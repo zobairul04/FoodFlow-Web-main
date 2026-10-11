@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+{% block title %}Recipient Dashboard — FoodFlow{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+        <h1 style="color: var(--green-700); font-size: 2rem;">Recipient Dashboard</h1>
+        <p style="color: var(--grey-500);">
+            Welcome, <strong>{{ recipient.user.username }}</strong> [{{ recipient.get_recipient_type_display }}]
+            {% if recipient.is_verified %}
+                <span class="badge badge-available" style="margin-left: 0.5rem;">✓ Verified (Eligible to Claim)</span>
+            {% else %}
+                <span class="badge badge-claimed" style="margin-left: 0.5rem;">Pending Admin Verification</span>
+            {% endif %}
+        </p>
+    </div>
+    <div style="display: flex; gap: 0.75rem;">
+        <a href="{% url 'claims:my_claims' %}" class="btn btn-secondary">My Claims</a>
+        <a href="{% url 'listings:browse_food' %}" class="btn btn-primary">Browse Available Food</a>
+    </div>
+</div>
+
+{% if not recipient.is_verified %}
+<div class="alert alert-warning">
+    <div>
+        <strong>Verification Required:</strong> Your account is currently pending administrator verification. 
+        You can browse nearby food listings, but you will only be able to submit claims once an admin verifies your profile.
+    </div>
+</div>
+{% endif %}
+
+<!-- Metrics Overview -->
+<div class="grid grid-3" style="margin-bottom: 2.5rem;">
+    <div class="stat-card">
+        <span class="stat-value">{{ nearby_food_count }}</span>
+        <span class="stat-label">Available in {{ recipient.location.city }}</span>
+    </div>
+    <div class="stat-card">
+        <span class="stat-value">{{ pending_claims_count }}</span>
+        <span class="stat-label">Active Claims Awaiting Pickup</span>
+    </div>
+    <div class="stat-card">
+        <span class="stat-value">{{ completed_claims_count }}</span>
+        <span class="stat-label">Completed Food Pickups</span>
+    </div>
+</div>
+
+<!-- Active Claims Section -->
+{% if pending_claims %}
+<div class="card" style="margin-bottom: 2.5rem; border-left: 4px solid var(--green-700);">
+    <div class="card-header">
+        <h3 class="card-title" style="color: var(--green-700);">Active Reserved Food & Pickup Codes</h3>
+        <a href="{% url 'claims:my_claims' %}" class="btn btn-outline btn-sm">View All Claims &rarr;</a>
+    </div>
+    <div class="grid grid-2" style="margin-top: 1rem;">
+        {% for claim in pending_claims %}
+        <div style="background: var(--green-50); border: 1px solid var(--green-700); border-radius: var(--radius-md); padding: 1.25rem;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <h4 style="color: var(--ink);">{{ claim.listing.food_name }}</h4>
+                <span class="badge badge-claimed">Pending</span>
+            </div>
+            <p style="font-size: 0.9rem; color: var(--grey-700); margin: 0.5rem 0;">
+                Reserved: <strong>{{ claim.claimed_quantity|floatformat:"-2" }} {{ claim.listing.unit }}</strong> from {{ claim.listing.donor.organization_name|default:claim.listing.donor.user.username }}
+            </p>
+            <p style="font-size: 0.9rem; color: var(--grey-700);">
+                Pickup at: <em>{{ claim.listing.location.address }}, {{ claim.listing.location.area }}</em>
+            </p>
+            <div class="pickup-code-box" style="margin: 0.75rem 0; padding: 0.75rem;">
+                <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--grey-500); font-weight: 700;">Show this code to donor:</div>
+                <div class="pickup-code-display" style="font-size: 1.6rem;">{{ claim.pickup_code }}</div>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 0.85rem; color: var(--red-600); font-weight: 600;">
+                    Deadline: {{ claim.pickup_deadline|date:"M d, h:i A" }}
+                </span>
+                <a href="{% url 'claims:claim_detail' pk=claim.pk %}" class="btn btn-secondary btn-sm">Claim Details</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Nearby Available Food -->
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+    <h2 style="font-size: 1.5rem; color: var(--ink);">Fresh & Available Food Donations</h2>
+    <a href="{% url 'listings:browse_food' %}" class="btn btn-outline btn-sm">Browse All &rarr;</a>
+</div>
+
+{% if recent_available %}
+<div class="grid grid-3">
+    {% for listing in recent_available %}
+        {% include 'listings/listing_card.html' with listing=listing is_recipient_view=True %}
+    {% endfor %}
+</div>
+{% else %}
+<div class="card" style="text-align: center; padding: 3rem;">
+    <p style="color: var(--grey-500); font-size: 1.1rem;">No available food donations in your area right now.</p>
+    <p style="color: var(--grey-500); font-size: 0.9rem; margin-top: 0.5rem;">You will receive an in-app notification as soon as a donor posts new food.</p>
+</div>
+{% endif %}
+{% endblock %}

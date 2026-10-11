@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if is_edit %}Edit Food Donation{% else %}Post Food Donation{% endif %} — FoodFlow{% endblock %}
+
+{% block content %}
+<div class="form-card" style="max-width: 650px;">
+    <h2 style="color: var(--green-700); margin-bottom: 0.5rem; text-align: center;">
+        {% if is_edit %}Edit Donation Listing{% else %}Donate Surplus Food{% endif %}
+    </h2>
+    <p style="color: var(--grey-500); text-align: center; margin-bottom: 2rem;">
+        Provide accurate details and expiry time. Our system will screen keywords and notify nearby verified recipients.
+    </p>
+
+    <form method="post" novalidate>
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label class="form-label">Food Name / Title</label>
+            {{ form.food_name }}
+            {% if form.food_name.errors %}<div class="form-error">{{ form.food_name.errors.0 }}</div>{% endif %}
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Food Description & Allergen Info</label>
+            {{ form.description }}
+            {% if form.description.errors %}<div class="form-error">{{ form.description.errors.0 }}</div>{% endif %}
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">Quantity</label>
+                {{ form.quantity }}
+                {% if form.quantity.errors %}<div class="form-error">{{ form.quantity.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Unit of Measurement</label>
+                {{ form.unit }}
+                {% if form.unit.errors %}<div class="form-error">{{ form.unit.errors.0 }}</div>{% endif %}
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Expiry Date & Time</label>
+            {{ form.expires_at }}
+            <p class="form-help">Must be between 30 minutes and 72 hours from current time.</p>
+            {% if form.expires_at.errors %}<div class="form-error">{{ form.expires_at.errors.0 }}</div>{% endif %}
+        </div>
+
+        <h4 style="color: var(--ink); margin: 1.5rem 0 0.75rem;">Pickup Location</h4>
+        <div class="form-group">
+            <label class="form-label">Street Address</label>
+            {{ form.address }}
+            {% if form.address.errors %}<div class="form-error">{{ form.address.errors.0 }}</div>{% endif %}
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">Area / Neighborhood</label>
+                {{ form.area }}
+                {% if form.area.errors %}<div class="form-error">{{ form.area.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="form-group">
+                <label class="form-label">City</label>
+                {{ form.city }}
+                {% if form.city.errors %}<div class="form-error">{{ form.city.errors.0 }}</div>{% endif %}
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Postal / ZIP Code</label>
+            {{ form.postal_code }}
+            {% if form.postal_code.errors %}<div class="form-error">{{ form.postal_code.errors.0 }}</div>{% endif %}
+        </div>
+
+        <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+            <button type="submit" class="btn btn-primary btn-lg" style="flex: 1;">
+                {% if is_edit %}Save Changes{% else %}Publish Donation Listing{% endif %}
+            </button>
+            {% if is_edit and listing %}
+                <a href="{% url 'listings:donor_listing_detail' pk=listing.pk %}" class="btn btn-secondary btn-lg">Cancel</a>
+            {% else %}
+                <a href="{% url 'listings:donor_listings' %}" class="btn btn-secondary btn-lg">Cancel</a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const quantity = document.getElementById("id_quantity");
+    const unit = document.getElementById("id_unit");
+
+    if (!quantity || !unit) return;
+
+    function updateQuantityRules() {
+        const step = ["kg", "L"].includes(unit.value) ? "0.01" : "1";
+
+        quantity.step = step;
+        quantity.min = step;
+    }
+
+    unit.addEventListener("change", updateQuantityRules);
+    updateQuantityRules();
+
+    quantity.addEventListener("wheel", function (event) {
+        if (document.activeElement === quantity) {
+            event.preventDefault();
+        }
+    }, { passive: false });
+
+    quantity.addEventListener("keydown", function (event) {
+        if (["ArrowUp", "ArrowDown"].includes(event.key)) {
+            event.preventDefault();
+        }
+    });
+});
+</script>
+{% endblock %}

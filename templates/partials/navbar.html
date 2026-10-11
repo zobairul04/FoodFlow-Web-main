@@ -1,0 +1,64 @@
+{% load static %}
+<nav class="navbar">
+    <div class="container navbar-container">
+        <a href="{% url 'home' %}" class="brand">
+            <span class="brand-icon">🌱</span>
+            <span>FoodFlow</span>
+        </a>
+
+        <ul class="nav-links">
+            {% if user.is_authenticated %}
+            {% if user.is_donor %}
+            <!-- Donor Navigation -->
+            <li><a href="{% url 'accounts:donor_dashboard' %}" class="nav-link">Dashboard</a></li>
+            <li><a href="{% url 'listings:donor_listings' %}" class="nav-link">My Listings</a></li>
+            <li><a href="{% url 'claims:my_claims' %}" class="nav-link">Food Claims</a></li>
+            <li>
+                {% if user.donor_profile.is_verified %}
+                <a href="{% url 'listings:donor_listing_create' %}"
+                   class="nav-link btn btn-primary btn-sm"
+                   style="color: white;">
+                    + Donate Food
+                </a>
+                {% else %}
+                <button type="button"
+                        class="btn btn-secondary btn-sm"
+                        title="Administrator verification is required to post food donations."
+                        disabled>
+                    Verification Pending
+                </button>
+                {% endif %}
+            </li>
+            <li><a href="{% url 'claims:verify_pickup' %}" class="nav-link">Verify Pickup</a></li>
+            {% elif user.is_recipient %}
+            <!-- Recipient Navigation -->
+            <li><a href="{% url 'accounts:recipient_dashboard' %}" class="nav-link">Dashboard</a></li>
+            <li><a href="{% url 'listings:browse_food' %}" class="nav-link">Browse Food</a></li>
+            <li><a href="{% url 'claims:my_claims' %}" class="nav-link">My Claims</a></li>
+            <li>
+                <a href="{% url 'notifications:notification_list' %}" class="nav-link">
+                Notifications
+                            <span id="navbar-unread-badge" class="badge-counter" {% if unread_notifications_count == 0 %}style="display: none;"{% endif %}>
+                                {{ unread_notifications_count }}
+                            </span>
+                        </a>
+                    </li>
+                {% endif %}
+
+                <!-- Shared Authenticated Links -->
+                <li><a href="{% url 'accounts:profile' %}" class="nav-link">Profile ({{ user.username }})</a></li>
+                {% if user.is_staff %}
+                    <li><a href="{% url 'admin:index' %}" class="nav-link">Admin Panel</a></li>
+                {% endif %}
+                <li><a href="{% url 'accounts:logout' %}" class="nav-link btn btn-secondary btn-sm">Logout</a></li>
+            {% else %}
+                <!-- Public / Anonymous User Navigation -->
+                <li><a href="{% url 'home' %}" class="nav-link">Home</a></li>
+                <li><a href="{% url 'listings:browse_food' %}" class="nav-link">Available Food</a></li>
+                <li><a href="{% url 'claims:my_claims' %}" class="nav-link">Track Claims</a></li>
+                <li><a href="{% url 'accounts:login' %}" class="nav-link">Login</a></li>
+                <li><a href="{% url 'accounts:register' %}" class="btn btn-primary btn-sm">Register</a></li>
+            {% endif %}
+        </ul>
+    </div>
+</nav>

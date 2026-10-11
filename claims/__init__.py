@@ -1,0 +1,1 @@
+"""Claims application package."""

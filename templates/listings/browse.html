@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% block title %}Browse Available Surplus Food — FoodFlow{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+    <h1 style="color: var(--green-700); font-size: 2rem;">Browse Available Food Donations</h1>
+    <p style="color: var(--grey-500);">
+        Live expiry-aware surplus food listings. Automatically filtered for safety and active shelf-life.
+    </p>
+</div>
+
+<!-- Search & Filters Bar -->
+<div class="card" style="margin-bottom: 2rem; padding: 1.25rem;">
+    <form method="get" style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end;">
+        <div style="flex: 2; min-width: 200px;">
+            <label class="form-label" style="font-size: 0.85rem;">Search Food or Keyword</label>
+            <input type="text" name="q" value="{{ q }}" class="form-input" placeholder="e.g. Rice, Bread, Curry, Apples...">
+        </div>
+
+        <div style="flex: 1; min-width: 140px;">
+            <label class="form-label" style="font-size: 0.85rem;">City</label>
+            <select name="city" class="form-select">
+                <option value="">All Cities</option>
+                {% for c in available_cities %}
+                    <option value="{{ c }}" {% if selected_city == c %}selected{% endif %}>{{ c }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div style="flex: 1; min-width: 140px;">
+            <label class="form-label" style="font-size: 0.85rem;">Area</label>
+            <select name="area" class="form-select">
+                <option value="">All Areas</option>
+                {% for a in available_areas %}
+                    <option value="{{ a }}" {% if selected_area == a %}selected{% endif %}>{{ a }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div style="flex: 1; min-width: 140px;">
+            <label class="form-label" style="font-size: 0.85rem;">Urgency Level</label>
+            <select name="urgency" class="form-select">
+                <option value="">All Urgencies</option>
+                <option value="safe" {% if selected_urgency == 'safe' %}selected{% endif %}>SAFE (&gt;6h)</option>
+                <option value="warning" {% if selected_urgency == 'warning' %}selected{% endif %}>WARNING (2-6h)</option>
+                <option value="urgent" {% if selected_urgency == 'urgent' %}selected{% endif %}>URGENT (&lt;2h)</option>
+            </select>
+        </div>
+
+        <div style="display: flex; gap: 0.5rem;">
+            <button type="submit" class="btn btn-primary">Filter</button>
+            <a href="{% url 'listings:browse_food' %}" class="btn btn-secondary">Clear</a>
+        </div>
+    </form>
+</div>
+
+<!-- Food Listings Grid -->
+{% if listings %}
+<div class="grid grid-3">
+    {% for listing in listings %}
+        {% include 'listings/listing_card.html' with listing=listing is_recipient_view=True %}
+    {% endfor %}
+</div>
+{% else %}
+<div class="card" style="text-align: center; padding: 4rem 2rem;">
+    <div style="font-size: 3rem; margin-bottom: 1rem;">🍃</div>
+    <h3 style="color: var(--ink); margin-bottom: 0.5rem;">No Available Food Matching Your Filters</h3>
+    <p style="color: var(--grey-500); max-width: 500px; margin: 0 auto 1.5rem;">
+        Food donations expire or get claimed quickly. Try adjusting your search query or area filters.
+    </p>
+    <a href="{% url 'listings:browse_food' %}" class="btn btn-outline">Reset All Filters</a>
+</div>
+{% endif %}
+{% endblock %}

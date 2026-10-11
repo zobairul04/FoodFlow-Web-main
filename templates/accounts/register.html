@@ -1,0 +1,239 @@
+{% extends 'base.html' %}
+
+{% block title %}Register — FoodFlow{% endblock %}
+
+{% block content %}
+<div class="form-card">
+    <h2 style="color: var(--green-700); margin-bottom: 0.5rem; text-align: center;">
+        Join FoodFlow
+    </h2>
+
+    <p style="color: var(--grey-500); text-align: center; margin-bottom: 2rem;">
+        Register as a Food Donor or Recipient to start rescuing surplus food.
+    </p>
+
+    <form method="post" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                {% for error in form.non_field_errors %}
+                    <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- Account Role -->
+        <div class="form-group">
+            <label class="form-label">I want to register as a:</label>
+            {{ form.role }}
+            {% for error in form.role.errors %}
+                <div class="form-error">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <!-- First Name and Last Name -->
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">
+                    First Name
+                </label>
+                {{ form.first_name }}
+                {% for error in form.first_name.errors %}
+                    <div class="form-error">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">
+                    Last Name
+                </label>
+                {{ form.last_name }}
+                {% for error in form.last_name.errors %}
+                    <div class="form-error">{{ error }}</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Username and Email -->
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">Username</label>
+                {{ form.username }}
+                {% for error in form.username.errors %}
+                    <div class="form-error">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Email Address</label>
+                {{ form.email }}
+                {% for error in form.email.errors %}
+                    <div class="form-error">{{ error }}</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Phone -->
+        <div class="form-group">
+            <label class="form-label">Phone Number</label>
+            {{ form.phone }}
+            {% for error in form.phone.errors %}
+                <div class="form-error">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <!-- Donor Details -->
+        <div id="donor-fields"
+             style="background: var(--green-50); padding: 1.25rem;
+                    border-radius: var(--radius-md); margin-bottom: 1.25rem;
+                    border: 1px solid var(--green-700);">
+            <h4 style="color: var(--green-700); margin-bottom: 0.75rem;">
+                Donor Details
+            </h4>
+
+            <div class="form-group">
+                <label class="form-label">Donor Type</label>
+                {{ form.donor_type }}
+                {% for error in form.donor_type.errors %}
+                    <div class="form-error">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">
+                    Business / Organization Name (Optional for households)
+                </label>
+                {{ form.organization_name }}
+                {% for error in form.organization_name.errors %}
+                    <div class="form-error">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <p class="form-help">
+                Administrator verification is required before you can post food donations.
+            </p>
+        </div>
+
+        <!-- Recipient Details -->
+        <div id="recipient-fields"
+             style="background: var(--green-50); padding: 1.25rem;
+                    border-radius: var(--radius-md); margin-bottom: 1.25rem;
+                    border: 1px solid var(--green-700); display: none;">
+            <h4 style="color: var(--green-700); margin-bottom: 0.75rem;">
+                Recipient Details
+            </h4>
+
+            <div class="form-group">
+                <label class="form-label">Recipient Category</label>
+                {{ form.recipient_type }}
+                {% for error in form.recipient_type.errors %}
+                    <div class="form-error">{{ error }}</div>
+                {% endfor %}
+                <p class="form-help">
+                    Administrator verification is required before you can claim food.
+                </p>
+            </div>
+        </div>
+
+        <!-- Location -->
+        <h4 style="color: var(--ink); margin: 1.5rem 0 0.75rem;">
+            Location & Address
+        </h4>
+
+        <div class="form-group">
+            <label class="form-label">Street Address</label>
+            {{ form.address }}
+            {% for error in form.address.errors %}
+                <div class="form-error">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">Area / Neighborhood</label>
+                {{ form.area }}
+                {% for error in form.area.errors %}
+                    <div class="form-error">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">City</label>
+                {{ form.city }}
+                {% for error in form.city.errors %}
+                    <div class="form-error">{{ error }}</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Postal Code (Optional)</label>
+            {{ form.postal_code }}
+            {% for error in form.postal_code.errors %}
+                <div class="form-error">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <!-- Password -->
+        <h4 style="color: var(--ink); margin: 1.5rem 0 0.75rem;">
+            Security
+        </h4>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                {{ form.password }}
+                {% for error in form.password.errors %}
+                    <div class="form-error">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Confirm Password</label>
+                {{ form.password_confirm }}
+                {% for error in form.password_confirm.errors %}
+                    <div class="form-error">{{ error }}</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <button type="submit"
+                class="btn btn-primary btn-lg"
+                style="width: 100%; margin-top: 1rem;">
+            Create Account
+        </button>
+    </form>
+
+    <p style="text-align: center; margin-top: 1.5rem;
+              font-size: 0.95rem; color: var(--grey-700);">
+        Already have an account?
+        <a href="{% url 'accounts:login' %}">Log in here</a>
+    </p>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const roleSelect = document.getElementById('id_role_select');
+        const donorFields = document.getElementById('donor-fields');
+        const recipientFields = document.getElementById('recipient-fields');
+
+        function toggleRoleFields() {
+            if (roleSelect.value === 'donor') {
+                donorFields.style.display = 'block';
+                recipientFields.style.display = 'none';
+            } else {
+                donorFields.style.display = 'none';
+                recipientFields.style.display = 'block';
+            }
+        }
+
+        if (roleSelect) {
+            roleSelect.addEventListener('change', toggleRoleFields);
+            toggleRoleFields();
+        }
+    });
+</script>
+{% endblock %}

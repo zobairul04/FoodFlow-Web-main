@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block title %}My Food Listings — FoodFlow{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+        <h1 style="color: var(--green-700); font-size: 2rem;">My Food Donations</h1>
+        <p style="color: var(--grey-500);">Manage all food donations posted under your account.</p>
+    </div>
+    <div>
+        {% if user.donor_profile.is_verified %}
+        <a href="{% url 'listings:donor_listing_create' %}" class="btn btn-primary">
+            + Post New Donation
+        </a>
+        {% else %}
+        <button type="button" class="btn btn-primary" disabled>
+            Verification Required to Post
+        </button>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Status Filters -->
+<div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+    <a href="{% url 'listings:donor_listings' %}" class="btn btn-sm {% if not status_filter %}btn-primary{% else %}btn-secondary{% endif %}">All</a>
+    <a href="{% url 'listings:donor_listings' %}?status=available" class="btn btn-sm {% if status_filter == 'available' %}btn-primary{% else %}btn-secondary{% endif %}">Available</a>
+    <a href="{% url 'listings:donor_listings' %}?status=claimed" class="btn btn-sm {% if status_filter == 'claimed' %}btn-primary{% else %}btn-secondary{% endif %}">Claimed</a>
+    <a href="{% url 'listings:donor_listings' %}?status=completed" class="btn btn-sm {% if status_filter == 'completed' %}btn-primary{% else %}btn-secondary{% endif %}">Completed</a>
+    <a href="{% url 'listings:donor_listings' %}?status=expired" class="btn btn-sm {% if status_filter == 'expired' %}btn-primary{% else %}btn-secondary{% endif %}">Expired</a>
+    <a href="{% url 'listings:donor_listings' %}?status=blocked" class="btn btn-sm {% if status_filter == 'blocked' %}btn-primary{% else %}btn-secondary{% endif %}">Blocked</a>
+</div>
+
+{% if listings %}
+<div class="grid grid-3">
+    {% for listing in listings %}
+    {% include 'listings/listing_card.html' with listing=listing is_donor_view=True %}
+    {% endfor %}
+</div>
+{% else %}
+<div class="card" style="text-align: center; padding: 3rem;">
+    <p style="color: var(--grey-500); font-size: 1.1rem; margin-bottom: 1rem;">No food listings found for this
+        filter.</p>
+    {% if user.donor_profile.is_verified %}
+    <a href="{% url 'listings:donor_listing_create' %}" class="btn btn-primary">
+        + Create New Listing
+    </a>
+    {% else %}
+    <p style="color: var(--amber-600);">
+        Administrator verification is required before you can post food donations.
+    </p>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

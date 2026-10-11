@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block title %}Claim #{{ claim.id }} Details — FoodFlow{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 1.5rem;">
+    {% if is_claimant %}
+        <a href="{% url 'claims:my_claims' %}" class="btn btn-secondary btn-sm">&larr; Back to My Claims</a>
+    {% else %}
+        <a href="{% url 'listings:donor_listing_detail' pk=claim.listing.pk %}" class="btn btn-secondary btn-sm">&larr; Back to Listing</a>
+    {% endif %}
+</div>
+
+<div class="form-card" style="max-width: 650px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <div>
+            <h2 style="color: var(--green-700);">Claim #{{ claim.id }}</h2>
+            <span style="color: var(--grey-500); font-size: 0.9rem;">Placed on {{ claim.claimed_at|date:"M d, Y, h:i A" }}</span>
+        </div>
+        <div>
+            <span class="badge badge-{{ claim.status }}">{{ claim.get_status_display }}</span>
+        </div>
+    </div>
+
+    <!-- Prominent Pickup Code Card -->
+    {% if claim.status == 'pending' %}
+        <div class="pickup-code-box">
+            <div style="font-size: 0.85rem; font-weight: 700; text-transform: uppercase; color: var(--grey-500); margin-bottom: 0.3rem;">
+                Official Handover Verification Token
+            </div>
+            <div class="pickup-code-display">{{ claim.pickup_code }}</div>
+            <p style="font-size: 0.85rem; color: var(--grey-700); margin-top: 0.5rem;">
+                Please present this 8-character code to the donor at the pickup location to complete handover.
+            </p>
+        </div>
+    {% endif %}
+
+    <div style="margin: 1.5rem 0; font-size: 1rem; line-height: 1.8;">
+        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--grey-200); padding: 0.5rem 0;">
+            <strong>Food Donation:</strong>
+            <span>{{ claim.listing.food_name }}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--grey-200); padding: 0.5rem 0;">
+            <strong>Claimed Quantity:</strong>
+            <span>{{ claim.claimed_quantity|floatformat:"-2" }} {{ claim.listing.unit }}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--grey-200); padding: 0.5rem 0;">
+            <strong>Donor:</strong>
+            <span>{{ claim.listing.donor.organization_name|default:claim.listing.donor.user.username }} ({{ claim.listing.donor.user.phone|default:'Contact in person' }})</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--grey-200); padding: 0.5rem 0;">
+            <strong>Pickup Location:</strong>
+            <span>{{ claim.listing.location.address }}, {{ claim.listing.location.area }}, {{ claim.listing.location.city }}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--grey-200); padding: 0.5rem 0;">
+            <strong>Pickup Deadline:</strong>
+            <span style="color: var(--red-600); font-weight: 600;">{{ claim.pickup_deadline|date:"l, M d, Y — h:i A" }}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding: 0.5rem 0;">
+            <strong>Recipient:</strong>
+            <span>{{ claim.recipient.user.username }}</span>
+        </div>
+    </div>
+
+    {% if is_claimant and claim.can_be_cancelled %}
+        <form class="cancel-claim-form" action="{% url 'claims:claim_cancel' pk=claim.pk %}" method="post" style="margin-top: 1.5rem;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger" style="width: 100%;">
+                Cancel This Claim
+            </button>
+        </form>
+    {% endif %}
+</div>
+{% endblock %}

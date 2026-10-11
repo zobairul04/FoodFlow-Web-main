@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+
+{% block title %}Donor Dashboard — FoodFlow{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+        <h1 style="color: var(--green-700); font-size: 2rem;">Donor Dashboard</h1>
+        <p style="color: var(--grey-500);">
+            Welcome, <strong>{{ donor.organization_name|default:donor.user.username }}</strong>
+            {% if donor.is_verified %}
+                <span class="badge badge-available" style="margin-left: 0.5rem;">✓ Verified Donor</span>
+            {% else %}
+                <span class="badge badge-claimed" style="margin-left: 0.5rem;">Verification Pending</span>
+            {% endif %}
+        </p>
+    </div>
+    <div style="display: flex; gap: 0.75rem;">
+        <a href="{% url 'claims:verify_pickup' %}" class="btn btn-secondary">Verify Pickup Code</a>
+        {% if donor.is_verified %}
+        <a href="{% url 'listings:donor_listing_create' %}" class="btn btn-primary">
+            + Post Food Donation
+        </a>
+        {% else %}
+        <button type="button" class="btn btn-primary" disabled>
+            Verification Required to Post
+        </button>
+        {% endif %}
+    </div>
+</div>
+
+{% if not donor.is_verified %}
+<div class="alert alert-warning">
+    <div>
+        <strong>Verification Required:</strong>
+        Your donor account is pending administrator verification.
+        You can post food donations once an administrator verifies your account.
+    </div>
+</div>
+{% endif %}
+
+<!-- Metrics Overview -->
+<div class="grid grid-4" style="margin-bottom: 2.5rem;">
+    <div class="stat-card">
+        <span class="stat-value">{{ available_count }}</span>
+        <span class="stat-label">Available Donations</span>
+    </div>
+    <div class="stat-card">
+        <span class="stat-value">{{ claimed_count }}</span>
+        <span class="stat-label">Pending Claim Pickups</span>
+    </div>
+    <div class="stat-card">
+        <span class="stat-value">{{ completed_count }}</span>
+        <span class="stat-label">Completed Rescues</span>
+    </div>
+    <div class="stat-card">
+        <span class="stat-value">{{ total_listings }}</span>
+        <span class="stat-label">Total Listings</span>
+    </div>
+</div>
+
+<!-- Pending Pickups Alert / List -->
+{% if pending_pickups %}
+<div class="card" style="margin-bottom: 2.5rem; border-left: 4px solid var(--amber-600);">
+    <div class="card-header">
+        <h3 class="card-title" style="color: var(--amber-600);">⚠️ Pending Handover / Pickups Awaiting Verification</h3>
+        <a href="{% url 'claims:verify_pickup' %}" class="btn btn-primary btn-sm">Enter Pickup Code &rarr;</a>
+    </div>
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; margin-top: 1rem; font-size: 0.95rem;">
+            <thead>
+                <tr style="text-align: left; border-bottom: 2px solid var(--grey-200); color: var(--grey-700);">
+                    <th style="padding: 0.75rem 0.5rem;">Food Item</th>
+                    <th style="padding: 0.75rem 0.5rem;">Reserved Qty</th>
+                    <th style="padding: 0.75rem 0.5rem;">Recipient</th>
+                    <th style="padding: 0.75rem 0.5rem;">Pickup Deadline</th>
+                    <th style="padding: 0.75rem 0.5rem;">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for claim in pending_pickups %}
+                <tr style="border-bottom: 1px solid var(--grey-200);">
+                    <td style="padding: 0.75rem 0.5rem; font-weight: 600;">{{ claim.listing.food_name }}</td>
+                    <td style="padding: 0.75rem 0.5rem;">{{ claim.claimed_quantity|floatformat:"-2" }} {{ claim.listing.unit }}</td>
+                    <td style="padding: 0.75rem 0.5rem;">{{ claim.recipient.user.username }}</td>
+                    <td style="padding: 0.75rem 0.5rem; color: var(--red-600); font-weight: 600;">
+                        {{ claim.pickup_deadline|date:"M d, h:i A" }}
+                    </td>
+                    <td style="padding: 0.75rem 0.5rem;">
+                        <a href="{% url 'claims:verify_pickup' %}" class="btn btn-outline btn-sm">Verify Code</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<!-- Recent Listings -->
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+    <h2 style="font-size: 1.5rem; color: var(--ink);">My Recent Food Listings</h2>
+    <a href="{% url 'listings:donor_listings' %}" class="btn btn-outline btn-sm">View All Listings &rarr;</a>
+</div>
+
+{% if recent_listings %}
+<div class="grid grid-3">
+    {% for listing in recent_listings %}
+        {% include 'listings/listing_card.html' with listing=listing is_donor_view=True %}
+    {% endfor %}
+</div>
+{% else %}
+<div class="card" style="text-align: center; padding: 3rem;">
+    <p style="color: var(--grey-500); font-size: 1.1rem; margin-bottom: 1.5rem;">You have not posted any food donations yet.</p>
+   {% if donor.is_verified %}
+    <a href="{% url 'listings:donor_listing_create' %}" class="btn btn-primary">
+        + Post Your First Donation
+    </a>
+{% else %}
+    <button type="button" class="btn btn-primary" disabled>
+        Verification Required to Post
+    </button>
+{% endif %}
+</div>
+{% endif %}
+{% endblock %}

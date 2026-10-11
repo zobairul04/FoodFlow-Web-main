@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}Login — FoodFlow{% endblock %}
+
+{% block content %}
+<div class="form-card" style="max-width: 450px;">
+    <h2 style="color: var(--green-700); margin-bottom: 0.5rem; text-align: center;">Welcome Back</h2>
+    <p style="color: var(--grey-500); text-align: center; margin-bottom: 2rem;">
+        Sign in with your username or email address
+    </p>
+
+    <form method="post" novalidate>
+        {% csrf_token %}
+        {% if request.GET.next %}
+            <input type="hidden" name="next" value="{{ request.GET.next }}">
+        {% elif request.POST.next %}
+            <input type="hidden" name="next" value="{{ request.POST.next }}">
+        {% endif %}
+
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger" style="margin-bottom: 1.25rem;">
+                {% for error in form.non_field_errors %}
+                    <p style="margin: 0;">{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <div class="form-group">
+            <label class="form-label">Username or Email</label>
+            {{ form.username }}
+            {% if form.username.errors %}<div class="form-error">{{ form.username.errors.0 }}</div>{% endif %}
+            <p class="form-help" style="font-size: 0.8rem; color: var(--grey-500); margin-top: 0.25rem;">You can use either your registered username or email address.</p>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Password</label>
+            {{ form.password }}
+            {% if form.password.errors %}<div class="form-error">{{ form.password.errors.0 }}</div>{% endif %}
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-lg" style="width: 100%; margin-top: 1rem;">
+            Sign In
+        </button>
+    </form>
+
+    <p style="text-align: center; margin-top: 1.5rem; font-size: 0.95rem; color: var(--grey-700);">
+        Don't have an account? <a href="{% url 'accounts:register' %}">Register now</a>
+    </p>
+</div>
+{% endblock %}

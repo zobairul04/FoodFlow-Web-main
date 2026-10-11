@@ -1,0 +1,66 @@
+<div class="card {% if listing.status == 'expired' or listing.is_expired %}card-expired{% endif %}">
+    <div class="card-header">
+        <div>
+            <h3 class="card-title">{{ listing.food_name }}</h3>
+            <span class="card-subtitle">by {{ listing.donor.organization_name|default:listing.donor.user.username }}</span>
+        </div>
+        <div>
+            <!-- Status Badge -->
+            <span class="badge badge-{{ listing.status }}">{{ listing.get_status_display }}</span>
+        </div>
+    </div>
+
+    <div class="card-body">
+        <p style="font-size: 0.95rem; color: var(--grey-700); margin-bottom: 0.75rem;">
+            {{ listing.description|default:"No special description provided."|truncatechars:100 }}
+        </p>
+
+        <div class="food-meta">
+            <div class="food-meta-item">
+                <span>📦</span>
+                <span><strong>{{ listing.quantity_available|floatformat:"-2" }}</strong> of {{ listing.quantity|floatformat:"-2" }} {{ listing.unit }} available</span>
+            </div>
+            <div class="food-meta-item">
+                <span>📍</span>
+                <span>{{ listing.location.area }}, {{ listing.location.city }}</span>
+            </div>
+            <div class="food-meta-item">
+                <span>⏳</span>
+                <span class="countdown" data-expires="{{ listing.expires_at|date:'c' }}">
+                    Calculating...
+                </span>
+            </div>
+        </div>
+
+        <div style="margin-top: 0.75rem; display: flex; align-items: center; justify-content: space-between;">
+            <!-- Urgency Level -->
+            <div>
+                <span style="font-size: 0.75rem; color: var(--grey-500); font-weight: 600;">URGENCY:</span>
+                <span class="urgency-badge urgency-{{ listing.expiry_tracker.urgency_level|default:'safe' }}">
+                    {{ listing.expiry_tracker.get_urgency_level_display|default:'SAFE'|upper }}
+                </span>
+            </div>
+
+            <!-- Safety Risk -->
+            {% if listing.safety_check %}
+                {% if listing.safety_check.is_safe %}
+                    <span style="font-size: 0.75rem; color: var(--green-700); font-weight: 600;">✓ Safe Screened</span>
+                {% else %}
+                    <span style="font-size: 0.75rem; color: var(--red-600); font-weight: 700;">⚠ Blocked</span>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card-footer">
+        {% if is_donor_view %}
+            <a href="{% url 'listings:donor_listing_detail' pk=listing.pk %}" class="btn btn-secondary btn-sm" style="width: 100%;">
+                Manage & View Claims &rarr;
+            </a>
+        {% else %}
+            <a href="{% url 'listings:food_detail' pk=listing.pk %}" class="btn btn-primary btn-sm btn-claim" style="width: 100%;">
+                View Food & Claim &rarr;
+            </a>
+        {% endif %}
+    </div>
+</div>
